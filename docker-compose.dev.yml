@@ -65,9 +65,9 @@ volumes:
 
 configs:
   jenkins_mta_job:
-    file: ./config.xml
+    file: ./configs/automation/config.xml
   gogs_app_ini:
-    file: ./app.ini
+    file: ./configs/git/app.ini
 
 secrets:
   jenkins-user:
