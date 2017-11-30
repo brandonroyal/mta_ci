@@ -14,9 +14,8 @@ sh build.sh
 1) Set environment variables
 
 ```bash
-#!/bin/bash
-JENKINS_USERNAME=admin
-JENKINS_PASSWORD=password
+export JENKINS_USERNAME=admin
+export JENKINS_PASSWORD=password
 ```
 
 1) Deploy stack
