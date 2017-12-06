@@ -51,11 +51,17 @@ sh deploy.sh
 
 ![image](https://user-images.githubusercontent.com/2762697/33624198-8886dbfe-d9c1-11e7-855a-9c9b675e8fcd.png)
 
-
 ## Usage
 
+1. Clone `app1` repo to your working machine and change to `app1` directory
 
+```bash
+git clone http://<hostname>:3000/mta/app1.git
+```
 
+```bash
+cd app1
+```
 
 ## Contributing
 
