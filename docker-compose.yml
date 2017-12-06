@@ -2,16 +2,17 @@ version: '3.3'
 
 services:
   automation:
-    image: broyal/mtaci_jenkins:0.1
+    image: broyal/mtaci_jenkins:${VERSION}
     ports:
       - "8080:8080"
     volumes:
       - automation_config:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
     deploy:
       mode: replicated
-      placement:
-        constraints:
-          - 'node.role == manager'
+#      placement:
+#        constraints:
+#          - 'node.role == manager'
     networks:
       - ci
     configs:
@@ -21,16 +22,16 @@ services:
       - jenkins-pass
   
   git:
-    image: broyal/mtaci_gogs:0.1
+    image: broyal/mtaci_gogs:${VERSION}
     ports:
       - "3000:3000"
     volumes:
       - git_config:/data
     deploy:
       mode: replicated
-      placement:
-        constraints:
-          - 'node.role == manager'
+#      placement:
+#        constraints:
+#          - 'node.role == manager'
     networks:
       - ci
       - git_db
@@ -38,16 +39,16 @@ services:
       - gogs_app_ini
 
   git_db:
-    image: broyal/mtaci_gogs_db:0.1
+    image: broyal/mtaci_gogs_db:${VERSION}
     environment:
-      - MYSQL_ROOT_PASSWORD=P@ssword1
+      - MYSQL_ROOT_PASSWORD=P@ssword1 #TODO: point to secret
     volumes:
       - db_db:/var/lib/mysql
     deploy:
       mode: replicated
-      placement:
-        constraints:
-          - 'node.role == manager'
+#      placement:
+#        constraints:
+#          - 'node.role == manager'
     networks:
       - ci
       - git_db
@@ -65,9 +66,9 @@ volumes:
 
 configs:
   jenkins_mta_job:
-    file: ./config.xml
+    file: ./configs/automation/config.xml
   gogs_app_ini:
-    file: ./app.ini
+    file: ./configs/git/app.ini
 
 secrets:
   jenkins-user:

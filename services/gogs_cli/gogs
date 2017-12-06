@@ -1,0 +1,435 @@
+#!/bin/bash
+# Interact with the GOGS API
+# Copyright (c) 2017 Matthew Downey (mattddowney@gmail_NOSPAM_.com)
+# Relased under the MIT License
+# See https://raw.githubusercontent.com/mattddowney/gogs-bash/master/LICENSE for the complete license text
+
+action=${1:-"help"}
+
+# preseed for checks
+response_code=0
+
+# ensure GOGS_ROOT_URL is set
+if [ -z $GOGS_ROOT_URL ]
+then
+	printf "Need to set GOGS_ROOT_URL environment variable\n" >&2
+	printf "\tIE: https://try.gogs.io\n" >&2
+
+	response_code=1
+fi
+
+# ensure GOGS_TOKEN is set
+if [ -z $GOGS_TOKEN ]
+then
+	printf "Need to set GOGS_TOKEN environment variable\n" >&2
+	printf "\tThis can be obtained at $GOGS_ROOT_URL/user/settings/applications\n" >&2
+
+	response_code=1
+fi
+
+# exit if either of the environment variables above are not set
+if [ $response_code -ne 0 ]
+then
+	exit $response_code
+fi
+
+# create a GOGS repository
+# https://github.com/gogits/go-gogs-client/wiki/Administration-Repositories#create-a-new-repository
+create-repo() {
+	local user_name=$1  # name of the user / organization where the repo will be created
+	local repo_name=$2  # name of the repo to be created
+
+	# ensure user_name is passed in
+	if [ -z $user_name ]
+	then
+		response_code=1
+	fi
+
+	# ensure repo_name is passed in
+	if [ -z $repo_name ]
+	then
+		response_code=1
+	fi
+
+	# print help and exit if either of the variables above are not passed in
+	if [ $response_code -ne 0 ]
+	then
+		help "create-repo"
+
+		exit $response_code
+	fi
+
+	printf "--" "---> Creating GOGS repository\n"
+	printf "--" "---> User/Org Name: $user_name\n"
+	printf "--" "---> Repo Name: $repo_name\n"
+
+	local body=$(cat <<-END
+		{
+			"name": "$repo_name",
+			"private": false
+		}
+	END
+    )
+
+	curl -H "Content-Type: application/json" \
+		 -H "Authorization: token $GOGS_TOKEN" \
+		 -d "$body" \
+		 -v $GOGS_ROOT_URL/api/v1/admin/users/$user_name/repos
+}
+
+# create a GOGS webhook
+# https://github.com/gogits/go-gogs-client/wiki/Repositories-Webhooks#create-a-hook
+create-webhook() {
+	local user_name=$1    # name of the user / organization that owns the repo where the webhook will be created
+	local repo_name=$2    # name of the repo where the webhook will be created
+	local webhook_url=$3  # the url for the webhook that will be created
+	local secret=$4       # optional secret that will be passed in the X-Gogs-Signature header
+
+	# ensure user_name is passed in
+	if [ -z $user_name ]
+	then
+		response_code=1
+	fi
+
+	# ensure repo_name is passed in
+	if [ -z $repo_name ]
+	then
+		response_code=1
+	fi
+
+	# ensure that webhook_url is passed in
+	if [ -z $webhook_url ]
+	then
+		response_code=1
+	fi
+
+	# print help and exit if either of the variables above are not passed in
+	if [ $response_code -ne 0 ]
+	then
+		help "create-webhook"
+
+		exit $response_code
+	fi
+
+	printf "--" "---> Creating GOGS webhook\n"
+	printf "--" "---> Repo Name: $repo_name\n"
+	printf "--" "---> Webhook URL: $webhook_url\n"
+	
+	local body=$(cat <<-END
+		{
+			"type": "gogs",
+			"config": {
+				"content_type": "json",
+				"url": "$webhook_url"
+			},
+			"events": [ "create", "push" ],
+			"active": true
+		}
+	END
+	)
+
+	# add secret to body if one is passed in
+	if [ -n $secret ]
+	then
+		body=$(echo "$body" | jq ".config.secret=\"$secret\"")
+	fi
+
+	curl -H "Content-Type: application/json" \
+		 -H "Authorization: token $GOGS_TOKEN" \
+		 -d "$body" \
+		 -v $GOGS_ROOT_URL/api/v1/repos/$user_name/$repo_name/hooks
+}
+
+# delete a GOGS webhook for a repo
+# https://github.com/gogits/go-gogs-client/wiki/Repositories-Webhooks#delete-a-hook
+delete-webhook() {
+	local user_name=$1
+	local repo_name=$2
+	local webhook_id=$3
+
+	# ensure user_name is passed in
+	if [ -z $user_name ]
+	then
+		response_code=1
+	fi
+
+	# ensure repo_name is passed in
+	if [ -z $repo_name ]
+	then
+		response_code=1
+	fi
+
+	# ensure webhook_id is passed in
+	if [ -z $webhook_id ]
+	then
+		response_code=1
+	fi
+
+	# print help and exit if any of the variables above are not passed in
+	if [ $reponse_code -ne 0 ]
+	then
+		help "delete-webhook"
+
+		exit $response_code
+	fi
+
+	printf "--" "---> Deleting GOGS webhook\n"
+	printf "--" "---> User Name: $user_name\n"
+	printf "--" "---> Repo Name: $repo_name\n"
+	printf "--" "---> Webhook Id: $webhook_id\n"
+
+	curl -H "Authorization: token $GOGS_TOKEN" \
+		 -X DELETE \
+		 -v $GOGS_ROOT_URL/api/v1/repos/$user_name/$repo_name/hooks/$webhook_id
+}
+
+# print environment information
+env() {
+	printf "GOGS_ROOT_URL=$GOGS_ROOT_URL\n"
+	printf "GOGS_TOKEN=$GOGS_TOKEN\n"
+}
+
+# get a list of repos by search keyword
+# https://github.com/gogits/go-gogs-client/wiki/Repositories#search-repositories
+get-repos() {
+	local search_keyword=$1 # term to find inside the repo name
+
+	# ensure search_keyword is passed in
+	if [ -z $search_keyword ]
+	then
+		help "get-repos"
+
+		exit 1
+	fi
+
+	printf "--" "---> Getting list of GOGS repos\n"
+
+	curl -H "Content-Type: application.json" \
+		 -H "Authorization: token $GOGS_TOKEN" \
+		 -v "$GOGS_ROOT_URL/api/v1/repos/search?q=$search_keyword"
+}
+
+# get a list of GOGS repos for a user
+# https://github.com/gogits/go-gogs-client/wiki/Repositories#list-user-repositories
+get-user-repos() {
+	local user_name=$1 # name of the user who's repos to list
+
+	# ensure user_name is passed in
+	if [ -z $user_name ]
+	then
+		help "get-user-repos"
+
+		exit 1
+	fi
+
+	printf "--" "---> Getting list of GOGS repos\n"
+	printf "--" "---> User Name: $user_name\n"
+
+	curl -H "Content-Type: application/json" \
+	     -H "Authorization: token $GOGS_TOKEN" \
+		 -v "$GOGS_ROOT_URL/api/v1/users/$user_name/repos"
+}
+
+# get a list of users by search keyword
+# https://github.com/gogits/go-gogs-client/wiki/Users#search-users
+get-users() {
+	local search_keyword=$1 # term to find inside the repo name
+
+	# ensure search_keyword is passed in
+	if [ -z $search_keyword ]
+	then
+		help "get-users"
+
+		exit 1
+	fi
+
+	printf "--" "---> Getting list of GOGS users\n"
+
+	curl -H "Content-Type: application.json" \
+		 -H "Authorization: token $GOGS_TOKEN" \
+		 -v "$GOGS_ROOT_URL/api/v1/users/search?q=$search_keyword"
+}
+
+# get a list of GOGS webhooks for a repo
+# https://github.com/gogits/go-gogs-client/wiki/Repositories-Webhooks#list-hooks
+get-webhooks() {
+	local user_name=$1 # name of the user / organization that owns the repo
+	local repo_name=$2 # name of the repo to list webhooks for
+
+	# ensure user_name is passed in
+	if [ -z $user_name ]
+	then
+		response_code=1
+	fi
+
+	# ensure repo_name is passed in
+	if [ -z $repo_name ]
+	then
+		response_code=1
+	fi
+
+	# print help and exit if either of the variables above are not passed in
+	if [ $response_code -ne 0 ]
+	then
+		help "get-webhooks"
+
+		exit $response_code
+	fi
+
+	printf "--" "---> Getting list of GOGS webhooks\n"
+	printf "--" "---> User Name: $user_name\n"
+	printf "--" "---> Repo Name: $repo_name\n"
+
+	curl -H "Authorization: token $GOGS_TOKEN" \
+		 -v $GOGS_ROOT_URL/api/v1/repos/$user_name/$repo_name/hooks
+}
+
+# print help
+help() {
+	local prog_name=$(echo "$0" | rev | cut -d'/' -f1 | rev)
+	local topic=$1
+
+	case "$topic" in
+		create-repo)
+			cat <<-END
+			Create a GOGS repository.
+			
+			Usage:
+			
+			    $prog_name $1 <user_name> <repo_name>
+			
+			Arguments:
+			
+			    user_name   name of the user or organization where the repo will be created
+			    repo_name   name of the repository to be created
+			END
+			;;
+
+		create-webhook)
+			cat <<-END
+			Create a GOGS webhook.
+			
+			Usage:
+			
+			    $prog_name $1 <user_name> <repo_name> <webhook_url> [secret]
+			
+			Arguments:
+			
+			    user_name       name of the user / organizationo that owns the repo where the webhook will be created
+			    repo_name       name of the repo where the webhook will be created
+			    webhook_url     the url for the webhook that will be created
+				secret          optional secret that will be passed in the X-Gogs-Signature header
+			END
+			;;
+
+		delete-webhook)
+			cat <<-END
+			Delete a GOGS webhook.
+
+			Usage:
+
+			    $prog_name $1 <user_name> <repo_name> <webhook_id>
+
+			Arguments:
+
+			    user_name   name of the user / organizationo that owns the repo containing the webhook
+				repo_name	name of the repo that contains the webhook
+				webhook_id  id of the webhook that will be deleted
+			END
+			;;
+
+		env)
+			cat <<-END
+			Prints environment variables needed by this script.
+
+			Variables:
+				
+			    GOGS_ROOT_URL   The url of the GOGS server
+				                    (IE: https://try.gogs.io)
+
+			    GOGS_TOKEN      Application token configured in GOGS
+				                    (Obtained from $GOGS_ROOT_URL/user/settings/applications)
+			END
+			;;
+		
+		get-repos)
+			cat <<-END
+			Get a list of GOGS repos by search keyword.
+
+			Usage:
+
+			    $prog_name $1   <search_keyword>
+
+			Arguments:
+
+			    search_keyword  term to find inside the repo name
+			END
+			;;
+
+		get-user-repos)
+			cat <<-END
+			Get a list of GOGS repos for a user.
+
+			Usage:
+
+			    $prog_name $1 <user_name>
+
+			Arguments:
+
+			    user_name   name of the user who's repos to list
+			END
+			;;
+
+		get-users)
+			cat <<-END
+			Get a list of GOGS users by search keyword.
+
+			Usage:
+			    $prog_name $1	<search_keyword>
+
+			Arguments:
+
+			    search_keyword  term to find inside the username
+			END
+			;;
+		
+		get-webhooks)
+			cat <<-END
+			Get a list of GOGS webhooks for a repo.
+
+			Usage:
+
+			    $prog_name $1 <user_name> <repo_name>
+
+			Arguments:
+
+			    user_name	name of the user / organization that owns the repo
+			    repo_name   name of the repo to list webhooks for
+			END
+			;;
+
+		*)
+			cat <<-END
+			$prog_name is a tool for interacting with the GOGS API.
+			
+			Usage:
+			    $prog_name command [arguments]
+			
+			The commands are:
+			
+			    create-repo     create a repository
+			    create-webhook  create a webhook
+			    delete-webhook  delete a webhook
+			    env             print environment information
+			    get-repos       get a list of repos by search keyword
+			    get-user-repos  get a list of repos for a user
+			    get-users       get a list of users by search keyword
+			    get-webhooks    get a list of webhooks for a repo
+			
+			Use "$prog_name help [command]" for more information about a command.
+			END
+			;;
+	esac
+}
+
+"$action" "${@:2}"

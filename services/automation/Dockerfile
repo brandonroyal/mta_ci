@@ -1,3 +1,6 @@
+ARG DOCKER_VER=17.06
+FROM docker:${DOCKER_VER}
+
 FROM jenkins:alpine
 
 #disable new installation wizard
@@ -11,6 +14,13 @@ COPY plugins.txt /usr/share/jenkins/ref/plugins.txt
 
 #install plugins
 RUN /usr/local/bin/install-plugins.sh < /usr/share/jenkins/ref/plugins.txt
+
+#cop docker client
+COPY --from=docker /usr/local/bin/docker /bin
+
+#install make and other tools
+USER root
+RUN apk add --update build-base
 
 COPY bootstrap.sh ./bootstrap.sh
 
