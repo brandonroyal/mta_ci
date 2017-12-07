@@ -18,9 +18,11 @@ push:
 up:
 	@export VERSION=$(VERSION) && docker-compose up -d;
 
-deploy:
+create-secrets:
 	@if [ "$(JENKINS_USERNAME_SECRET)" = "" ]; then echo 'creating jenkins username secret - $(JENKIN_USERNAME)'; echo $(JENKINS_USER) | docker secret create jenkins-user -; fi
 	@if [ "$(JENKINS_PASSWORD_SECRET)" = "" ]; then echo 'enter jenkins password:'; read -s password && echo $$password | docker secret create jenkins-pass -; fi
+
+deploy: create-secrets
 	@export VERSION=$(VERSION) && docker stack deploy -c docker-compose.yml $(STACK_NAME)
 
 cleanup-stack:

@@ -32,11 +32,11 @@ services:
 #      placement:
 #        constraints:
 #          - 'node.role == manager'
+    environment:
+      - HOSTNAME=localhost
     networks:
       - ci
       - git_db
-    configs:
-      - gogs_app_ini
 
   git_db:
     image: broyal/mtaci_gogs_db:${VERSION}
@@ -63,10 +63,6 @@ volumes:
   automation_config:
   git_config:
   db_db:
-
-configs:
-  gogs_app_ini:
-    file: ./configs/git/app.ini
 
 secrets:
   jenkins-user:
