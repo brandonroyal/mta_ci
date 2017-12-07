@@ -54,6 +54,8 @@ services:
     networks:
       - ci
       - git_db
+    secrets:
+      - mysql-root-pass 
 
 networks:
   ci:
