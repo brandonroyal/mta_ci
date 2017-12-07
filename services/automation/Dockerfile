@@ -22,6 +22,9 @@ COPY --from=docker /usr/local/bin/docker /bin
 USER root
 RUN apk add --update build-base
 
+#copy job configuration template
+COPY config.xml ./config.xml
+
 COPY bootstrap.sh ./bootstrap.sh
 
 ENTRYPOINT sh bootstrap.sh

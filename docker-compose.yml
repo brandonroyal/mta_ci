@@ -13,10 +13,10 @@ services:
 #      placement:
 #        constraints:
 #          - 'node.role == manager'
+    environment:
+      - INTERNAL_REPOSITORY_PATH=http://git:3000/mta/app1.git
     networks:
       - ci
-    configs:
-      - jenkins_mta_job
     secrets:
       - jenkins-user
       - jenkins-pass
@@ -65,8 +65,6 @@ volumes:
   db_db:
 
 configs:
-  jenkins_mta_job:
-    file: ./configs/automation/config.xml
   gogs_app_ini:
     file: ./configs/git/app.ini
 
