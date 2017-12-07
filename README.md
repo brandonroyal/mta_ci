@@ -2,22 +2,44 @@
 
 Self-contained solution for CI within MTA Infrastructure for automated builds
 
+## Pre-Installation
+
+1. Install UCP and join at least one (1) linux worker node.
+
 ## Installation
 
-1. Set environment
+We'll be installing CI services on a dedicated node in UCP
+
+1. Set environment variables and secrets
 
 ```bash
-export HOSTNAME=<hostname>
+#VERSION of images
+export VERSION=0.5.0
+#HOSTNAME within swarm on which you want to pin the services. a single swarm work is recommended (HINT: get your desired hostname using `docker node ls`)
+export HOSTNAME=<node_hostname>
+#JENKINS_USERNAME
+export JENKIN_USERNAME=admin
 ```
 
-2. Download and run deployment script
+```bash
+#Jenkins default username
+echo $JENKINS_USER | docker secret create jenkins-user -
+
+#Jenkins password
+read -s password && echo $$password | docker secret create jenkins-pass -
+
+#MySQL root password
+read -s password && echo $$password | docker secret create mysql-root-pass -
+```
+
+2. Download compose file and deploy stack
 
 ```bash
-wget <gist URL .tar.gz>
+wget https://raw.githubusercontent.com/BrandonRoyal/mta_ci/master/docker-compose.yml
 ```
 
 ```bash
-sh deploy.sh
+docker stack deploy -c docker-compose.yml mtaci
 ```
 
 3. Browse to gogs app at `http://<hostname>:3000` and complete database configuration, using database password from previous step

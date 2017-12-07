@@ -10,9 +10,9 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
     deploy:
       mode: replicated
-#      placement:
-#        constraints:
-#          - 'node.role == manager'
+      placement:
+        constraints:
+          - 'node.role == ${HOSTNAME}'
     environment:
       - INTERNAL_REPOSITORY_PATH=http://git:3000/mta/app1.git
     networks:
@@ -29,9 +29,9 @@ services:
       - git_config:/data
     deploy:
       mode: replicated
-#      placement:
-#        constraints:
-#          - 'node.role == manager'
+      placement:
+        constraints:
+          - 'node.role == ${HOSTNAME}'
     environment:
       - HOSTNAME=localhost
     networks:
@@ -48,9 +48,9 @@ services:
       - db_db:/var/lib/mysql
     deploy:
       mode: replicated
-#      placement:
-#        constraints:
-#          - 'node.role == manager'
+      placement:
+        constraints:
+          - 'node.role == ${HOSTNAME}'
     networks:
       - ci
       - git_db

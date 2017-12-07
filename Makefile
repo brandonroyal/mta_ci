@@ -1,4 +1,4 @@
-VERSION := 0.4.4
+VERSION := 0.5.0
 STACK_NAME := mtaci
 JENKIN_USERNAME := admin
 JENKINS_USERNAME_SECRET := $(shell docker secret ls | grep jenkins-user | awk '{print $$1}')
@@ -9,7 +9,6 @@ build:
 	@docker build -t broyal/mtaci_jenkins:$(VERSION) ./services/automation
 	@docker build -t broyal/mtaci_gogs:$(VERSION) ./services/git
 	@docker build -t broyal/mtaci_gogs_db:$(VERSION) ./services/git_db
-	@docker build -t broyal/mtaci_gogs_cli:$(VERSION) ./services/gogs_cli
 
 push:
 	@docker push broyal/mtaci_jenkins:$(VERSION)
