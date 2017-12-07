@@ -26,10 +26,10 @@ export JENKIN_USERNAME=admin
 echo $JENKINS_USER | docker secret create jenkins-user -
 
 #Jenkins password
-read -s password && echo $$password | docker secret create jenkins-pass -
+read -s password && echo $password | docker secret create jenkins-pass -
 
 #MySQL root password
-read -s password && echo $$password | docker secret create mysql-root-pass -
+read -s password && echo $password | docker secret create mysql-root-pass -
 ```
 
 2. Download compose file and deploy stack
