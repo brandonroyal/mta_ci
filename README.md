@@ -42,19 +42,15 @@ wget https://raw.githubusercontent.com/BrandonRoyal/mta_ci/master/docker-compose
 docker stack deploy -c docker-compose.yml mtaci
 ```
 
-3. Browse to gogs app at `http://<hostname>:3000` and complete database configuration, using database password from previous step
-
-![image](https://user-images.githubusercontent.com/2762697/33511810-ada5d210-d6f0-11e7-9e59-39049b1fa7aa.png)
-
-4. Register with your own username, email and password then login
+3. Browse to gogs app at `http://<hostname>:3000`, click `Register` and register with your own username, email and password then login (NOTE: you will become the admin user by default)
 
 ![image](https://user-images.githubusercontent.com/2762697/33511832-4e68f858-d6f1-11e7-8175-94d528778c54.png)
 
-5. Create organization named `mta`
+4. Create organization named `mta`
 
 ![image](https://user-images.githubusercontent.com/2762697/33511850-a637afc0-d6f1-11e7-9326-7d7316c4dd10.png)
 
-6. Create new `Migration` using the following configurations:
+5. Create new `Migration` using the following configurations:
 
     * **Clone Address:** `https://gitub.com/brandonroyal/mta_projecttemplate-linux`
     * **Owner:** `mta`
@@ -62,11 +58,11 @@ docker stack deploy -c docker-compose.yml mtaci
 
 ![image](https://user-images.githubusercontent.com/2762697/33615595-89877180-d9a8-11e7-8863-4fd7e9e3b50d.png)
 
-7. Add Jenkins webhook by navigating to `app1 >> Settings >> Webhooks` and clicking `Add Webhook >> Gogs`
+6. Add Jenkins webhook by navigating to `app1 >> Settings >> Webhooks` and clicking `Add Webhook >> Gogs`
 
 ![image](https://user-images.githubusercontent.com/2762697/33623991-de6247b2-d9c0-11e7-95b6-e11e5275f20b.png)
 
-8. Include the following information in your webhook. `Save` when complete.
+7. Include the following information in your webhook. `Save` when complete.
 
     * **Payload URL:** `http://automation:8080/gogs-webhook/?job=mta`
     * **Content Type:** `application/json`
