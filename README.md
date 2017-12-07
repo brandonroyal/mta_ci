@@ -4,7 +4,7 @@ Self-contained solution for CI within MTA Infrastructure for automated builds
 
 ## Installation
 
-1. Set environment variables
+1. Set environment
 
 ```bash
 export HOSTNAME=<hostname>
