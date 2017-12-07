@@ -37,11 +37,13 @@ services:
     networks:
       - ci
       - git_db
+    secrets:
+      - mysql-root-pass 
 
   git_db:
     image: broyal/mtaci_gogs_db:${VERSION}
     environment:
-      - MYSQL_ROOT_PASSWORD=P@ssword1 #TODO: point to secret
+      - MYSQL_ROOT_PASSWORD_FILE=/run/secrets/mysql-root-pass
     volumes:
       - db_db:/var/lib/mysql
     deploy:
@@ -68,4 +70,6 @@ secrets:
   jenkins-user:
     external: true
   jenkins-pass:
+    external: true
+  mysql-root-pass:
     external: true
