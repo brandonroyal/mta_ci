@@ -12,7 +12,7 @@ services:
       mode: replicated
       placement:
         constraints:
-          - 'node.role == ${HOSTNAME}'
+          - 'node.hostname == ${HOSTNAME}'
     environment:
       - INTERNAL_REPOSITORY_PATH=http://git:3000/mta/app1.git
     networks:
@@ -31,7 +31,7 @@ services:
       mode: replicated
       placement:
         constraints:
-          - 'node.role == ${HOSTNAME}'
+          - 'node.hostname == ${HOSTNAME}'
     environment:
       - HOSTNAME=localhost
     networks:
@@ -50,7 +50,7 @@ services:
       mode: replicated
       placement:
         constraints:
-          - 'node.role == ${HOSTNAME}'
+          - 'node.hostname == ${HOSTNAME}'
     networks:
       - ci
       - git_db
