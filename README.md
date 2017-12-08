@@ -52,7 +52,7 @@ docker stack deploy -c docker-compose.yml mtaci
 
 5. Create new `Migration` using the following configurations:
 
-    * **Clone Address:** `https://gitub.com/brandonroyal/mta_projecttemplate-linux`
+    * **Clone Address:** `https://github.com/brandonroyal/mta_projecttemplate-linux`
     * **Owner:** `mta`
     * **Repository Name:** `app1`
 
