@@ -14,7 +14,7 @@ We'll be installing CI services on a dedicated node in UCP
 
 ```bash
 #VERSION of images
-export VERSION=0.5.0
+export VERSION=0.5.1
 #HOSTNAME within swarm on which you want to pin the services. a single swarm work is recommended (HINT: get your desired hostname using `docker node ls`)
 export HOSTNAME=<node_hostname>
 #JENKINS_USERNAME
@@ -23,7 +23,7 @@ export JENKIN_USERNAME=admin
 
 ```bash
 #Jenkins default username
-echo $JENKINS_USER | docker secret create jenkins-user -
+echo $JENKIN_USERNAME | docker secret create jenkins-user -
 
 #Jenkins password
 read -s password && echo $password | docker secret create jenkins-pass -

@@ -1,4 +1,4 @@
-VERSION := 0.5.0
+VERSION := 0.5.1
 STACK_NAME := mtaci
 JENKIN_USERNAME := admin
 JENKINS_USERNAME_SECRET := $(shell docker secret ls | grep jenkins-user | awk '{print $$1}')
